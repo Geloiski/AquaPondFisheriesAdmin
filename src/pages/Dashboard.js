@@ -119,7 +119,7 @@ function Dashboard() {
         </Button>
         <Divider />
         <List sx={{ background: "#FF9967", paddingLeft: 3 }}>
-          {["Dashboard", "Users", "Shops"].map((text, index) => (
+          {["Dashboard", "Shops"].map((text, index) => (
             <ListItem
               key={text}
               sx={

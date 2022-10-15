@@ -2,6 +2,7 @@ import { Grid, Paper, Typography } from "@mui/material";
 import React from "react";
 import PeopleIcon from "@mui/icons-material/People";
 import StoreIcon from "@mui/icons-material/Store";
+import Users from "./Users";
 function MainDashboard() {
   const data = [
     {
@@ -46,6 +47,7 @@ function MainDashboard() {
           </Grid>
         ))}
       </Grid>
+      <Users />
     </Grid>
   );
 }

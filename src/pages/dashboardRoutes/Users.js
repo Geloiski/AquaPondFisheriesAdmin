@@ -147,13 +147,13 @@ export default function Users() {
         <TableBody>
           {(rowsPerPage > 0
             ? userData.slice(
-                page * rowsPerPage,
-                page * rowsPerPage + rowsPerPage
-              )
+              page * rowsPerPage,
+              page * rowsPerPage + rowsPerPage
+            )
             : userData
           ).map((row) => (
             <TableRow key={row.id} onClick={() => handleEvent(row.accountID)}>
-              <TableCell component='th' scope='row' align='left'>
+              <TableCell component='th' scope='row' align='left' style={{ width: 160 }}>
                 {row.accountID}
               </TableCell>
               <TableCell style={{ width: 160 }} align='center'>
