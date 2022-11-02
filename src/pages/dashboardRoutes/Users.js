@@ -18,7 +18,7 @@ import LastPageIcon from "@mui/icons-material/LastPage";
 
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { db } from "../../utils/firebase";
-import { TableHead } from "@mui/material";
+import { LinearProgress, Stack, TableHead } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 function TablePaginationActions(props) {
   const theme = useTheme();
@@ -94,6 +94,7 @@ export default function Users() {
   const [page, setPage] = React.useState(0);
   const [userData, setData] = React.useState([]);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [isLoading, setIsLoading] = React.useState(false);
   userData.sort((a, b) => (a.calories < b.calories ? -1 : 1));
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - userData.length) : 0;
@@ -107,6 +108,7 @@ export default function Users() {
     setPage(0);
   };
   React.useEffect(() => {
+    setIsLoading(true)
     const q = query(collection(db, "users"), orderBy("ownerId", "desc"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const data = [];
@@ -122,6 +124,7 @@ export default function Users() {
         });
       });
       setData(data);
+      setIsLoading(false)
     });
     return unsubscribe;
   }, [navigate]);
@@ -129,78 +132,90 @@ export default function Users() {
     navigate(`/view/${userId}`);
   };
   return (
-    <TableContainer
-      component={Paper}
-      sx={{ minHeight: "85vh", boxShadow: 2, border: 2 }}
+    <Box sx={{
+      marginTop: 5,
+    }}
     >
-      <Table sx={{ minWidth: 500 }} aria-label='custom pagination table'>
-        <TableHead>
-          <TableRow sx={{ fontWeigth: 700 }}>
-            <TableCell>ID</TableCell>
-            <TableCell align='center'>Full Name</TableCell>
-            <TableCell align='center'>Email</TableCell>
-            <TableCell align='center'>Address</TableCell>
-            <TableCell align='center'>Phone</TableCell>
-            <TableCell align='center'>Has Shop</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {(rowsPerPage > 0
-            ? userData.slice(
-              page * rowsPerPage,
-              page * rowsPerPage + rowsPerPage
-            )
-            : userData
-          ).map((row) => (
-            <TableRow key={row.id} onClick={() => handleEvent(row.accountID)}>
-              <TableCell component='th' scope='row' align='left' style={{ width: 160 }}>
-                {row.accountID}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                {row.fullname}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                {row.email}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                {row.address}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                {row.phone}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                {row.hasShop}
-              </TableCell>
-            </TableRow>
-          ))}
+      {isLoading ?
+        <Stack sx={{ width: '100%', color: 'grey.500' }} spacing={2}>
+          <LinearProgress color="secondary" />
+        </Stack>
+        : <>
+          <TableContainer
+            component={Paper}
+            sx={{ minHeight: "85vh", boxShadow: 2, border: 2 }}
+          >
+            <Table sx={{ minWidth: 500 }} aria-label='custom pagination table'>
+              <TableHead>
+                <TableRow sx={{ fontWeigth: 700 }}>
+                  <TableCell>ID</TableCell>
+                  <TableCell align='center'>Full Name</TableCell>
+                  <TableCell align='center'>Email</TableCell>
+                  <TableCell align='center'>Address</TableCell>
+                  <TableCell align='center'>Phone</TableCell>
+                  <TableCell align='center'>Has Shop</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(rowsPerPage > 0
+                  ? userData.slice(
+                    page * rowsPerPage,
+                    page * rowsPerPage + rowsPerPage
+                  )
+                  : userData
+                ).map((row) => (
+                  <TableRow key={row.id} onClick={() => handleEvent(row.accountID)}>
+                    <TableCell component='th' scope='row' align='left' style={{ width: 160 }}>
+                      {row.accountID}
+                    </TableCell>
+                    <TableCell style={{ width: 160 }} align='center'>
+                      {row.fullname}
+                    </TableCell>
+                    <TableCell style={{ width: 160 }} align='center'>
+                      {row.email}
+                    </TableCell>
+                    <TableCell style={{ width: 160 }} align='center'>
+                      {row.address}
+                    </TableCell>
+                    <TableCell style={{ width: 160 }} align='center'>
+                      {row.phone}
+                    </TableCell>
+                    <TableCell style={{ width: 160 }} align='center'>
+                      {row.hasShop}
+                    </TableCell>
+                  </TableRow>
+                ))}
 
-          {emptyRows > 0 && (
-            <TableRow style={{ height: 53 * emptyRows }}>
-              <TableCell colSpan={6} />
-            </TableRow>
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
-              colSpan={6}
-              count={userData.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              SelectProps={{
-                inputProps: {
-                  "aria-label": "rows per page",
-                },
-                native: true,
-              }}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              ActionsComponent={TablePaginationActions}
-            />
-          </TableRow>
-        </TableFooter>
-      </Table>
-    </TableContainer>
+                {emptyRows > 0 && (
+                  <TableRow style={{ height: 53 * emptyRows }}>
+                    <TableCell colSpan={6} />
+                  </TableRow>
+                )}
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
+                    colSpan={6}
+                    count={userData.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    SelectProps={{
+                      inputProps: {
+                        "aria-label": "rows per page",
+                      },
+                      native: true,
+                    }}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    ActionsComponent={TablePaginationActions}
+                  />
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </TableContainer>
+        </>
+      }
+    </Box>
   );
 }

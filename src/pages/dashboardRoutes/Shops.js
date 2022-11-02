@@ -16,9 +16,9 @@ import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
 
-import { collection, doc, onSnapshot, query, setDoc, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, onSnapshot, query, setDoc } from "firebase/firestore";
 import { db } from "../../utils/firebase";
-import { Button, TableHead } from "@mui/material";
+import { Button, CircularProgress, Grid, LinearProgress, Stack, TableHead } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import moment from "moment/moment";
 
@@ -93,6 +93,7 @@ TablePaginationActions.propTypes = {
 
 export default function Shops() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = React.useState(false);
   const [page, setPage] = React.useState(0);
   const [userData, setUserData] = React.useState([]);
   const [shopData, setShopData] = React.useState([]);
@@ -109,47 +110,38 @@ export default function Shops() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
   React.useEffect(() => {
-    const q = query(collection(db, "users"), where("hasShop", "==", true));
+    setIsLoading(true);
+    const q = query(collection(db, "shops"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const data = [];
       querySnapshot.forEach((doc) => {
         data.push({
           id: doc.id,
           data: doc.data()
-        });
+        })
       });
-      for (let index = 0; index < data.length; index++) {
-        const shopQuery = query(collection(db, "users", data[index].id, "shop"));
-        onSnapshot(shopQuery, (querySnapshot) => {
-          const shopData = [];
-          querySnapshot.forEach((doc) => {
-            shopData.push({
-              id: doc.id,
-              ownerName: doc.data().fullName,
-              shopName: doc.data().businessName,
-              phone: doc.data().contactNo,
-              dateCreated: doc.data().dateCreated,
-              location: doc.data().shopLocation,
-              isVerified: doc.data().isShopVerified === true ? "Yes" : "No",
-              ownerID: doc.data().userID,
-            });
-          });
-          setShopData(shopData);
-          console.log(shopData);
-        });
-      }
-      setUserData(data);
+      setShopData(data);
+      setIsLoading(false);
     });
     return unsubscribe;
-  }, [navigate]);
+  }, [navigate])
+
+  console.log(shopData);
 
   const handleVerify = async (ownerID, shopID) => {
     const shopQuery = doc(db, "users", ownerID, "shop", shopID);
     await setDoc(shopQuery, {
       isShopVerified: true
     }, { merge: true }
-    )
+    ).then(async () => {
+      const shopsQuery = doc(db, "shops", shopID);
+      await setDoc(shopsQuery, {
+        isShopVerified: true
+      }, { merge: true }
+      )
+    })
   }
 
   const handleReject = async (ownerID, shopID) => {
@@ -168,104 +160,116 @@ export default function Shops() {
     )
   }
 
-  const handleDelete = async (ownerID, shopID) => {
-    const shopQuery = doc(db, "users", ownerID, "shop", shopID);
-    await setDoc(shopQuery, {
-      isShopVerified: false
-    }, { merge: true }
-    )
+  const handleDelete = (ownerID, shopID) => {
+    deleteDoc(doc(db, "users", ownerID, "shop", shopID)).then(async() =>{
+      const userQuery = doc(db, "users", ownerID);
+      await setDoc(userQuery, {
+        isShopVerified: false
+      }, { merge: true }
+      ).then(() => {
+        deleteDoc(doc(db, "shops", shopID))
+      })
+    })
   }
   return (
     <TableContainer
       component={Paper}
       sx={{ minHeight: "85vh", boxShadow: 2, border: 2 }}
     >
-      <Table sx={{ minWidth: 500 }} aria-label='custom pagination table'>
-        <TableHead>
-          <TableRow sx={{ fontWeigth: 700 }}>
-            <TableCell>ID</TableCell>
-            <TableCell align='center'>Owner Name</TableCell>
-            <TableCell align='center'>Shop Name</TableCell>
-            <TableCell align='center'>Phone</TableCell>
-            <TableCell align='center'>Date Created</TableCell>
-            <TableCell align='center'>Location</TableCell>
-            <TableCell align='center'>Is Verified</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {(rowsPerPage > 0
-            ? shopData.slice(
-              page * rowsPerPage,
-              page * rowsPerPage + rowsPerPage
-            )
-            : shopData
-          ).map((row) => (
-            <TableRow key={row.id} >
-              <TableCell component='th' scope='row' align='left' style={{ width: 160 }}>
-                {row.id}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                {row.ownerName}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                {row.shopName}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                {row.phone}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                {moment(row.dateCreated).format("MMM Do YY")}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                {row.location}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                {row.isVerified}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align='center'>
-                <Box sx={{ display: 'flex', flexDirection: row, justifyContent: 'space-evenly' }}>
-                  {row.isVerified === "Yes" ?
-                    <>
-                      <Button variant='contained' color="success" onClick={() => handleView(row.ownerID, row.id)}>View</Button>
-                      <Button variant='contained' color="error" onClick={() => handleDelete(row.ownerID, row.id)}>Delete</Button>
-                    </> :
-                    <>
-                      <Button variant='contained' color="success" onClick={() => handleVerify(row.ownerID, row.id)}>Verify</Button>
-                      <Button variant='contained' color="error" onClick={() => handleReject(row.ownerID, row.id)}>Reject</Button>
-                    </>
-                  }
-                </Box>
-              </TableCell>
-            </TableRow>
-          ))}
-
-          {emptyRows > 0 && (
-            <TableRow style={{ height: 53 * emptyRows }}>
-              <TableCell colSpan={6} />
-            </TableRow>
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
-              colSpan={6}
-              count={shopData.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              SelectProps={{
-                inputProps: {
-                  "aria-label": "rows per page",
-                },
-                native: true,
-              }}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              ActionsComponent={TablePaginationActions}
-            />
-          </TableRow>
-        </TableFooter>
-      </Table>
-    </TableContainer>
+      {isLoading ?
+        <Stack sx={{ width: '100%', color: 'grey.500' }} spacing={2}>
+          <LinearProgress color="secondary" />
+        </Stack>
+        : <>
+          <Table sx={{ minWidth: 500 }} aria-label='custom pagination table'>
+            <TableHead>
+              <TableRow sx={{ fontWeigth: 700 }}>
+                <TableCell>ID</TableCell>
+                <TableCell align='center'>Owner Name</TableCell>
+                <TableCell align='center'>Shop Name</TableCell>
+                <TableCell align='center'>Phone</TableCell>
+                <TableCell align='center'>Date Created</TableCell>
+                <TableCell align='center'>Location</TableCell>
+                <TableCell align='center'>Is Verified</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {(rowsPerPage > 0
+                ? shopData.slice(
+                  page * rowsPerPage,
+                  page * rowsPerPage + rowsPerPage
+                )
+                : shopData
+              ).map(({ data, id }) => (
+                <TableRow key={id} >
+                  <TableCell component='th' scope='row' align='left' style={{ width: 160 }}>
+                    {id}
+                  </TableCell>
+                  <TableCell style={{ width: 160 }} align='center'>
+                    {data.fullName}
+                  </TableCell>
+                  <TableCell style={{ width: 160 }} align='center'>
+                    {data.businessName}
+                  </TableCell>
+                  <TableCell style={{ width: 160 }} align='center'>
+                    {data.contactNo}
+                  </TableCell>
+                  <TableCell style={{ width: 160 }} align='center'>
+                    {
+                      moment(data.dateCreated).format("ll")
+                    }
+                  </TableCell>
+                  <TableCell style={{ width: 160 }} align='center'>
+                    {data.shopLocation}
+                  </TableCell>
+                  <TableCell style={{ width: 160 }} align='center'>
+                    {data.isShopVerified === false ? 'false' : 'true'}
+                  </TableCell>
+                  <TableCell style={{ width: 160 }} align='center'>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly' }}>
+                      {data.isShopVerified === true ?
+                        <>
+                          <Button variant='contained' color="success" onClick={() => handleView(data.userID, id)}>View</Button>
+                          <Button variant='contained' color="error" onClick={() => handleDelete(data.userID, id)} sx={{ marginLeft: 1 }}>Delete</Button>
+                        </> :
+                        <>
+                          <Button variant='contained' color="success" onClick={() => handleVerify(data.userID, id)}>Verify</Button>
+                          <Button variant='contained' color="error" onClick={() => handleReject(data.userID, id)} sx={{ marginLeft: 1 }}>Reject</Button>
+                        </>
+                      }
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {emptyRows > 0 && (
+                <TableRow style={{ height: 53 * emptyRows }}>
+                  <TableCell colSpan={6} />
+                </TableRow>
+              )}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
+                  colSpan={6}
+                  count={shopData.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  SelectProps={{
+                    inputProps: {
+                      "aria-label": "rows per page",
+                    },
+                    native: true,
+                  }}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  ActionsComponent={TablePaginationActions}
+                />
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </>
+      }
+    </TableContainer >
   );
 }

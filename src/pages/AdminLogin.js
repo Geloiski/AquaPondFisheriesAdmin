@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   TextField,
@@ -27,8 +27,7 @@ const style = {
     width: 1500,
   },
   root: {
-    background: (theme) =>
-      `radial-gradient(circle, ${theme.palette.primary.light}, ${theme.palette.primary.dark})`,
+    backgroundColor: "#FF9967",
     height: {
       xs: "110vh",
       sm: "100vh",
@@ -134,28 +133,34 @@ function AdminLogin({ loggedIn }) {
     });
   };
 
+  const [loading, setLoading] = useState(false)
+
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
 
   const login = async () => {
+    setLoading(true)
     if (values.username === "" || values.password === "") {
       setValues({ ...values, error: "It seems there are empty fields." });
+      setLoading(false)
     } else if (values.username === "admin" && values.password === "password") {
       try {
         await signInWithEmailAndPassword(auth, "admin@yopmail.com", "password")
           .then((userCredential) => {
             // Signed in
             navigate("/admin/dashboard");
+            setLoading(false)
             // ...
           })
           .catch((error) => {
             const errorMessage = error.message;
             setValues({ ...values, error: errorMessage });
           });
-      } catch (error) {}
+      } catch (error) { }
     } else {
       setValues({ ...values, error: "Invalid credentials." });
+      setLoading(false)
     }
   };
   return (
@@ -171,6 +176,7 @@ function AdminLogin({ loggedIn }) {
             sx={style.textFieldStyle}
             id='input-with-icon-textfield'
             value={values.username}
+            onKeyDown={(e) => e.key === 'Enter' && login()}
             onChange={handleChange("username")}
             InputProps={{
               startAdornment: (
@@ -190,6 +196,7 @@ function AdminLogin({ loggedIn }) {
               type={values.showPassword ? "text" : "password"}
               value={values.password}
               onChange={handleChange("password")}
+              onKeyDown={(e) => e.key === 'Enter' && login()}
               startAdornment={
                 <InputAdornment position='start'>
                   <KeyIcon

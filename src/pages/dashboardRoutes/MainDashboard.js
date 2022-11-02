@@ -32,7 +32,7 @@ function MainDashboard() {
             <Paper
               sx={{
                 height: 120,
-                width: 320,
+                width: 270,
                 backgroundColor: "#1A2027",
                 p: 2,
               }}
