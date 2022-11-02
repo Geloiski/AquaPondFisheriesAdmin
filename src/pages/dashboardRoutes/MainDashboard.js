@@ -3,6 +3,7 @@ import React from "react";
 import PeopleIcon from "@mui/icons-material/People";
 import StoreIcon from "@mui/icons-material/Store";
 import Users from "./Users";
+import { Outlet } from "react-router-dom";
 function MainDashboard() {
   const data = [
     {

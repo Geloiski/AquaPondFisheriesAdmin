@@ -52,11 +52,12 @@ function App() {
           </Route>
           <Route element={<ProtectedRoutes isAuth={isAuthenticated} />}>
             <Route path='admin' element={<Dashboard />}>
-              <Route path='dashboard' element={<MainDashboard />} />
+              <Route path='dashboard' element={<MainDashboard />} >
+                <Route path='view/:id' element={<SingleView />} />
+              </Route>
               <Route path='users-info' element={<Users />} />
               <Route path='shop-info' element={<Shops />} />
             </Route>
-            <Route path='admin/users-info/view/:id' element={<SingleView />} />
           </Route>
           <Route path='*' element={<NotFound />} />
         </Routes>
