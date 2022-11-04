@@ -10,6 +10,7 @@ import {
   ListItemIcon,
   ListItemText,
   Button,
+  Grid,
 } from "@mui/material";
 import { Box } from "@mui/system";
 import { Outlet, useNavigate } from "react-router-dom";
@@ -18,6 +19,8 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import AccountBoxIcon from "@mui/icons-material/AccountBox";
 import { signOut } from "firebase/auth";
 import { auth } from "../utils/firebase";
+import logo from "../assets/icon3.png";
+import { Helmet } from "react-helmet";
 
 const drawerWidth = 250;
 const styles = {
@@ -44,6 +47,7 @@ const styles = {
       backgroundColor: "white",
       margin: "20px 0px 20px 0px",
     },
+    cursor: 'pointer'
   },
   menuItemContainerActive: {
     display: "flex",
@@ -53,14 +57,16 @@ const styles = {
     borderBottomLeftRadius: 50,
     backgroundColor: "white",
     margin: "20px 0px 20px 0px",
+    cursor: 'pointer'
   },
-  labels: { fontSize: 20, fontWeight: 500, color: "#000" },
+  labels: { fontSize: 25, fontWeight: 600, color: "#000" },
   icons: { fontSize: 30, color: "#000" },
   buttonStyle: { minHeight: { sm: "64px", xs: "48px" } },
   logoutIcon: { fontSize: { sm: 50, xs: 36 }, color: "#000" },
   outletContainer: {
     flexGrow: 1,
     p: 3,
+    maxWidth: 1300
   },
 };
 function Dashboard() {
@@ -98,6 +104,10 @@ function Dashboard() {
   };
   return (
     <Box sx={styles.root}>
+      <Helmet>
+        <title>Dashboard</title>
+        <link rel="Aquapond Icon" href={logo} />
+      </Helmet>
       <AppBar
         position='fixed'
         sx={{
@@ -108,7 +118,7 @@ function Dashboard() {
         <Toolbar variant='regular'>
           <Box sx={{ flexGrow: 1 }} />
           <Typography variant='h6' noWrap component='div' sx={styles.labels}>
-            Admin Name
+            Admin
           </Typography>
         </Toolbar>
       </AppBar>
@@ -137,10 +147,11 @@ function Dashboard() {
           ))}
         </List>
       </Drawer>
-
-      <Box sx={styles.outletContainer}>
-        <Toolbar />
-        <Outlet />
+      <Box container justifyContent="center" component={Grid}>
+        <Box sx={styles.outletContainer}>
+          <Toolbar />
+          <Outlet />
+        </Box>
       </Box>
     </Box>
   );

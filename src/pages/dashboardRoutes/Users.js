@@ -150,23 +150,41 @@ export default function Users() {
         </Stack>
         : <>
           {isClicked === true ?
-            <Box sx={{ minHeight: "85vh", boxShadow: 2, border: 2 }}>
+            <Box sx={{ boxShadow: 2, border: 2 }}>
               <SingleView data={selectedData} />
             </Box>
             : <>
               <TableContainer
                 component={Paper}
-                sx={{ minHeight: "85vh", boxShadow: 2, border: 2 }}
+                sx={{ minHeight:500, boxShadow: 2, border: 2 }}
               >
                 <Table sx={{ minWidth: 500 }} aria-label='custom pagination table'>
                   <TableHead>
                     <TableRow sx={{ fontWeigth: 700 }}>
-                      <TableCell>ID</TableCell>
-                      <TableCell align='center'>Full Name</TableCell>
-                      <TableCell align='center'>Email</TableCell>
-                      <TableCell align='center'>Address</TableCell>
-                      <TableCell align='center'>Phone</TableCell>
-                      <TableCell align='center'>Has Shop</TableCell>
+                      <TableCell sx={{
+                        fontSize: 18,
+                        fontWeight: '600'
+                      }}>ID</TableCell>
+                      <TableCell align='center' sx={{
+                        fontSize: 18,
+                        fontWeight: '600'
+                      }}>Full Name</TableCell>
+                      <TableCell align='center' sx={{
+                        fontSize: 18,
+                        fontWeight: '600'
+                      }}>Email</TableCell>
+                      <TableCell align='center' sx={{
+                        fontSize: 18,
+                        fontWeight: '600'
+                      }}>Address</TableCell>
+                      <TableCell align='center' sx={{
+                        fontSize: 18,
+                        fontWeight: '600'
+                      }}>Phone</TableCell>
+                      <TableCell align='center' sx={{
+                        fontSize: 18,
+                        fontWeight: '600'
+                      }}>Has Shop</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -177,23 +195,32 @@ export default function Users() {
                       )
                       : userData
                     ).map((row) => (
-                      <TableRow key={row.id} onClick={() => handleEvent(row.accountID)}>
-                        <TableCell component='th' scope='row' align='left' style={{ width: 160 }}>
-                          {row.accountID}
+                      <TableRow key={row.id} onClick={() => handleEvent(row.accountID)} sx={{
+                        transition: 'all ease 200ms',
+                        '&:hover': {
+                          transform: 'scale(1.01)',
+                          boxShawd: '0 13px 40px -5px hsla(240, 30.1%, 28%, 0.12), 0 8px 32px -8px hsla(0, 0%, 0%, 0.14), 0 -6px 32px -6px hsla(0, 0%, 0%, 0.02)'
+                        },
+                        cursor: 'pointer'
+                      }}>
+                        <TableCell component='th' scope='row' align='left' style={{
+                          width: 160, fontWeight: 'bold', cursor: 'pointer',
+                        }}>
+                          {row.accountID.substring(0, 7)}
                         </TableCell>
-                        <TableCell style={{ width: 160 }} align='center'>
+                        <TableCell style={{ width: 160, fontWeight: 'bold' }} align='center'>
                           {row.fullname}
                         </TableCell>
-                        <TableCell style={{ width: 160 }} align='center'>
+                        <TableCell style={{ width: 160, fontWeight: 'bold' }} align='center'>
                           {row.email}
                         </TableCell>
-                        <TableCell style={{ width: 160 }} align='center'>
+                        <TableCell style={{ width: 160, fontWeight: 'bold' }} align='center'>
                           {row.address}
                         </TableCell>
-                        <TableCell style={{ width: 160 }} align='center'>
+                        <TableCell style={{ width: 160, fontWeight: 'bold' }} align='center'>
                           {row.phone}
                         </TableCell>
-                        <TableCell style={{ width: 160 }} align='center'>
+                        <TableCell style={{ width: 160, fontWeight: 'bold'}} align='center'>
                           {row.hasShop}
                         </TableCell>
                       </TableRow>

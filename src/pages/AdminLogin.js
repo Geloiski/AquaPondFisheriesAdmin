@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Box,
   TextField,
@@ -18,6 +18,8 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../utils/firebase";
+import { Helmet } from "react-helmet";
+import logo from '../assets/icon3.png'
 
 const style = {
   section1: {
@@ -110,6 +112,7 @@ const style = {
     },
     height: "6.5ch",
     marginTop: 4,
+    fontWeight: 'bold'
   },
 };
 
@@ -133,24 +136,19 @@ function AdminLogin({ loggedIn }) {
     });
   };
 
-  const [loading, setLoading] = useState(false)
-
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
 
   const login = async () => {
-    setLoading(true)
     if (values.username === "" || values.password === "") {
       setValues({ ...values, error: "It seems there are empty fields." });
-      setLoading(false)
     } else if (values.username === "admin" && values.password === "password") {
       try {
         await signInWithEmailAndPassword(auth, "admin@yopmail.com", "password")
           .then((userCredential) => {
             // Signed in
             navigate("/admin/dashboard");
-            setLoading(false)
             // ...
           })
           .catch((error) => {
@@ -160,11 +158,14 @@ function AdminLogin({ loggedIn }) {
       } catch (error) { }
     } else {
       setValues({ ...values, error: "Invalid credentials." });
-      setLoading(false)
     }
   };
   return (
     <Box component={Grid} container justifyContent='center' sx={style.root}>
+      <Helmet>
+        <title>Admin login</title>
+        <link rel="Aquapond Icon" href={logo} />
+      </Helmet>
       <Box sx={style.section1}>
         <Box sx={style.formContainer}>
           <Typography sx={style.formTitle}>Admin Login</Typography>
